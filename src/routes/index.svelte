@@ -1,35 +1,73 @@
 <LeftDrawer>
-  <Blackboard/>
+  <div slot="drawer-items">
+    {#each areaDocs as areaDoc}
+      <Item>
+        <Text>{areaDoc.name}</Text>
+
+        <List>
+          <Item>
+
+          </Item>
+        </List>
+      </Item>
+    {/each}
+  </div>
+
+  <!-- Display blackboards -->
+  <Blackboard slot="main-content"/>
 </LeftDrawer>
-<!-- <CardsDemo></CardsDemo> -->
 
-<!-- <pre class="status">Clicked: {clicked}</pre>
-
-<div style="display: flex; flex-wrap: wrap; align-items: center;">
-  <Button><Label>Button with a Label</Label></Button>
- 
-  <Fab extended><Label>Fab with a Label</Label></Fab>
- 
-  <IconButton><Icon class="material-icons">favorite</Icon></IconButton>
- 
-  <Fab><Icon class="material-icons">favorite</Icon></Fab>
-</div> -->
+<!-- <CurrentRoom/> -->
+<!-- In PARALLEL, fetch classDoc, areaDoc and roomDoc -->
+<!-- Or it should redirect by appending to the route -->
 
 <Button on:click={signInWithGoogle}>Sign in with Google</Button>
- 
+
+<script context="module">
+	export function load({ page }) {
+		// let host = page.host;
+		// const i = host.indexOf(':');
+		// if (i >= 0) {
+		// 	host = host.substring(0, i);
+		// }
+    console.log('load() index.svelte')
+		return {
+			redirect: '/room/lvzQqyZIV1wjwYnRV9hn',
+      status: 301
+			// status: host === 'localhost' || host === '127.0.0.1' ? 302 : 301
+		};
+	}
+</script>
+
 <script>
-  import CardsDemo from '../CardsDemo.svelte'
+  import CurrentRoom from './room/[id].svelte'
   import Button, { Label } from '@smui/button';
+  import List, { Item, Text } from '@smui/list';
   import LeftDrawer from '../LeftDrawer.svelte'
   import Blackboard from '../Blackboard.svelte'
-  import { db } from '../database.js'
-  import { collection, getDocs } from "firebase/firestore"; 
+  import db from '../database.js'
+  import { collection, getDocs, query, where  } from "firebase/firestore"; 
   import { onMount } from 'svelte';
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
+  // import { goto } from '$app/navigation';
 
-  onMount(async () => {
+  // function routeToPage(route, replaceState) {
+  //   goto(`/lvzQqyZIV1wjwYnRV9hn`, { replaceState }) 
+  // }
+  // routeToPage()
 
-  })
+  // export let dota = load() // shouldn't it be import? 
+  // export let dota
+
+  // console.log('dota =', dota)
+
+  // onMount(async () => {
+  //   console.log('dota =', dota)
+  // })
+
+  let areaDocs = [] 
+  let roomDocs; 
+  let classDoc;
 
   function signInWithGoogle () {
     const provider = new GoogleAuthProvider();
@@ -45,8 +83,32 @@
         // fetch database
         try {
           const classesSnapshot = await getDocs(collection(db, 'classes'))
-          const allClasses = classesSnapshot.docs.map(doc => doc.data());
+          const allClasses = classesSnapshot.docs.map(doc => {
+            return { id: doc.id, ...doc.data() } 
+          });
           console.log('allClasses =', allClasses)
+          
+          // now fetch area and rooms
+          const c = allClasses[0] 
+          c.id = 'lvzQqyZIV1wjwYnRV9hn' // override on purpose for testing
+
+          // fetch areas
+          const areasQuery = query(collection(db, `classes/${c.id}/roomTypes`))
+          const areasSnapshot = await getDocs(areasQuery) 
+          const allAreas = areasSnapshot.docs.map(doc => {
+            return { id: doc.id, ...doc.data() }
+          })
+          console.log('allAreas =', allAreas)
+          areaDocs = allAreas
+
+          // fetch rooms 
+          const roomsQuery = query(collection(db, `classes/${c.id}/rooms`), where('roomTypeID', '==', c.id))
+          const roomsSnapshot = await getDocs(roomsQuery)
+          const allRooms = roomsSnapshot.docs.map(doc => { 
+            return { id: doc.id, ...doc.data() } 
+          })
+        
+          console.log('allRooms =', allRooms)
         } catch (e) {
           console.error("Error adding document: ", e);
         }
@@ -80,7 +142,6 @@
         // ...
       });
   }
-
 </script>
 
 <style>

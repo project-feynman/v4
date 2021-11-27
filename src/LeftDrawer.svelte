@@ -2,48 +2,18 @@
   <Drawer>
     <Content>
       <List>
-        <Item
-          href="javascript:void(0)"
-          on:click={() => (clicked = 'Gray Kittens')}
-        >
-          <Text>Gray Kittens</Text>
-        </Item>
-        <Item
-          href="javascript:void(0)"
-          on:click={() => (clicked = 'A Space Rocket')}
-        >
-          <Text>A Space Rocket</Text>
-        </Item>
-        <Item
-          href="javascript:void(0)"
-          on:click={() => (clicked = '100 Pounds of Gravel')}
-        >
-          <Text>100 Pounds of Gravel</Text>
-        </Item>
-        <Item
-          href="javascript:void(0)"
-          on:click={() => (clicked = 'All of the Shrimp')}
-        >
-          <Text>All of the Shrimp</Text>
-        </Item>
-        <Item
-          href="javascript:void(0)"
-          on:click={() => (clicked = 'A Planet with a Mall')}
-        >
-          <Text>A Planet with a Mall</Text>
-        </Item>
+        <div id="side-drawer-list">
+
+        </div>
       </List>
     </Content>
   </Drawer>
  
   <AppContent class="app-content">
     <main class="main-content">
-      App content.
-      <br />
-      <pre class="status">Clicked: {clicked}</pre>
-      <slot>
+      <div id="main-content">
         
-      </slot>
+      </div>
     </main>
   </AppContent>
 </div>

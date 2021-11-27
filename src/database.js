@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { collection, getDocs, getDoc, query, where  } from "firebase/firestore"; 
 
 initializeApp({
   apiKey: "AIzaSyB7XsbhYEd_4DQigc_hfnmdpcwlvzugPOw",
@@ -12,9 +13,17 @@ initializeApp({
   measurementId: "G-DR4M7QGV7Z"
 });
 
-// firebase.analytics();
-// firebase.analytics().logEvent("Opened website");
 const db = getFirestore()
-console.log('db =', db)
 
-export { db }
+export default db
+
+export async function fetchDocs (dbPath) {
+  return new Promise(async (resolve) => {
+    const snapshot = await getDocs(collection(db, dbPath))
+    const data = snapshot.docs.map(doc => {
+      return { id: doc.id, ...doc.data() }
+    })
+    resolve(data)
+  })
+}
+
