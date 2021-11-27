@@ -14,5 +14,7 @@ initializeApp({
 
 // firebase.analytics();
 // firebase.analytics().logEvent("Opened website");
+const db = getFirestore()
+console.log('db =', db)
 
-export default getFirestore()
+export { db }
