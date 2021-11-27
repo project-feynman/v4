@@ -30,7 +30,7 @@
 <!-- Put the portal on the main content -->
 {#if roomDoc}
 	<div use:portal={'main-content'}>
-		{#each roomDoc.blackboards as boardID}
+		{#each roomDoc.blackboards as boardID (boardID) }
 			<RenderlessFetchStrokes dbPath={boardsDbPath + boardID + '/strokes'} let:strokesArray={strokesArray}>
 				{#await strokesArray}
 					<p>...waiting</p>

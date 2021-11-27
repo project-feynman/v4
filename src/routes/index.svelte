@@ -44,7 +44,7 @@
   import Button, { Label } from '@smui/button';
   import List, { Item, Text } from '@smui/list';
   import LeftDrawer from '../LeftDrawer.svelte'
-  import Blackboard from '../Blackboard.svelte'
+  import Blackboard from '../components/Blackboard.svelte'
   import db from '../database.js'
   import { collection, getDocs, query, where  } from "firebase/firestore"; 
   import { onMount } from 'svelte';

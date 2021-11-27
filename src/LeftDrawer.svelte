@@ -1,6 +1,13 @@
 <div class="drawer-container">
+
   <Drawer>
     <Content>
+      <div class="card-container">
+        <Card padded>
+          <img src="../static/logo.png" width="55" height="50">
+          <ClassDropdownMenu/>
+        </Card>
+      </div>
       <List>
         <div id="side-drawer-list">
 
@@ -19,7 +26,9 @@
 </div>
  
 <script lang="ts">
+  import ClassDropdownMenu from './components/ClassDropdownMenu.svelte'
   import Drawer, { AppContent, Content } from '@smui/drawer';
+  import Card from '@smui/card'
   import List, { Item, Text } from '@smui/list';
  
   let clicked = 'nothing yet';
