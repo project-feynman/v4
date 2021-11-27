@@ -27,18 +27,22 @@
   </div>
 {/if}
 
-<!-- Put the portal on the main content -->
+<!-- Lazy loading -->
 {#if roomDoc}
-	<div use:portal={'main-content'}>
+	<div use:portal={'main-content'} style="height: 100vh">
 		{#each roomDoc.blackboards as boardID (boardID) }
-			<RenderlessFetchStrokes dbPath={boardsDbPath + boardID + '/strokes'} let:strokesArray={strokesArray}>
-				{#await strokesArray}
-					<p>...waiting</p>
-				{:then strokesArray}
+			<RenderlessFetchStrokes dbPath={boardsDbPath + boardID + '/strokes'} 
+				let:fetchStrokes={fetchStrokes}
+				let:strokesArray={strokesArray}
+			>
+				{#if !strokesArray}
+					<LinearProgress indeterminate />	
+					<div use:lazyFetching={fetchStrokes} style="height: 500px">
+						<Blackboard strokesArray={[]}></Blackboard>
+					</div> 
+				{:else if strokesArray }
 					<Blackboard strokesArray={strokesArray}/>
-				{:catch error}
-					<p style="color: red">{error.message}</p>
-				{/await}
+				{/if}
 			</RenderlessFetchStrokes>
 		{/each}
 	</div>
@@ -47,6 +51,7 @@
 <LeftDrawer/>
 
 <script>
+import LinearProgress from '@smui/linear-progress';
 import RenderlessFetchStrokes from '../../components/RenderlessFetchStrokes.svelte'
 import Blackboard from '../../components/Blackboard.svelte'
 import LeftDrawer from '../../LeftDrawer.svelte'
@@ -68,6 +73,27 @@ const roomsDbPath = 'classes/lvzQqyZIV1wjwYnRV9hn/rooms/'
 
 function routeToPage(route, replaceState = false) {
    goto(`/${route}`, { replaceState }) 
+}
+
+function lazyFetching (node, fetchStrokes) {
+	let observer = new IntersectionObserver (
+		(entries) => {
+			for (const entry of entries) {
+				// for some god damn reason the callbacks fire on initialization, even when there is no intersection,
+				// so we have to check manually
+				if (entry.isIntersecting) {
+					fetchStrokes()
+					return
+				}
+			}
+		}, 
+		{
+			root: null, // use viewport 
+			threshold: 0.5,
+			rootMargin: '0px' // shrink/expand the root element's area, not very useful
+		}
+	)
+  observer.observe(node)
 }
 
 storeUser.subscribe(async (newUserValue) => {

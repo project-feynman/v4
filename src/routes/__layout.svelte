@@ -15,20 +15,13 @@
 		// 	}
 		// }
 		console.log('roomDoc =', roomDoc)
-		// const article = await db.get(slug);
-	
-		if (article) {
-			return {
-				body: {
-					article
-				}
-			};
-		}
 	}
 </script>
 
-{#if !storeUser}
-	<Button ion:click={signInWithGoogle}>Google Sign-in</Button>
+{#if !storeUser.uid}
+	<div use:portal={'sign-up-area'}>
+		<Button on:click={signInWithGoogle}>Google Sign-in</Button>
+	</div>
 {/if}
 
 <slot>
@@ -36,6 +29,7 @@
 </slot>
 
 <script>
+	import { portal } from '../actions.js'
 	import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 	import Button, { Label } from '@smui/button';
 	import { storeUser } from '../store.js'
@@ -50,7 +44,6 @@
     // provider.addScope('https://www.googleapis.cfom/auth/contacts.readonly');
     const auth = getAuth();
 
-    console.log('signing in...')
     signInWithPopup(auth, provider)
       .then((result) => {
         console.log('success')
@@ -74,58 +67,55 @@
 		}
 
 	onMount(async () => {
-		console.log('getAuth =', getAuth)
 		const auth = getAuth()
 	
-	onAuthStateChanged(auth, async (user) => {
-		console.log('auth state changed')
-		if (user) {
-			console.log('logged in')
-			// User is signed in, see docs for a list of available properties
-			// https://firebase.google.com/docs/reference/js/firebase.User
-			const uid = user.uid;
+		onAuthStateChanged(auth, async (user) => {
+			if (user) {
+				// User is signed in, see docs for a list of available properties
+				// https://firebase.google.com/docs/reference/js/firebase.User
+				const uid = user.uid;
 
-			storeUser.set(user)
+				storeUser.set(user)
 
-			// fetch database
-			try {
-				const classesSnapshot = await getDocs(collection(db, 'classes'))
-				const allClasses = classesSnapshot.docs.map(doc => {
-					return { id: doc.id, ...doc.data() } 
-				});
-				console.log('allClasses =', allClasses)
+				// fetch database
+				try {
+					const classesSnapshot = await getDocs(collection(db, 'classes'))
+					const allClasses = classesSnapshot.docs.map(doc => {
+						return { id: doc.id, ...doc.data() } 
+					});
+					// console.log('allClasses =', allClasses)
+					
+					// now fetch area and rooms
+					const c = allClasses[0] 
+					c.id = 'lvzQqyZIV1wjwYnRV9hn' // override on purpose for testing
+
+					// fetch areas
+					const areasQuery = query(collection(db, `classes/${c.id}/roomTypes`))
+					const areasSnapshot = await getDocs(areasQuery) 
+					const allAreas = areasSnapshot.docs.map(doc => {
+						return { id: doc.id, ...doc.data() }
+					})
+					console.log('allAreas =', allAreas)
+					areaDocs = allAreas
+
+					// fetch rooms 
+					const roomsQuery = query(collection(db, `classes/${c.id}/rooms`), where('roomTypeID', '==', c.id))
+					const roomsSnapshot = await getDocs(roomsQuery)
+					const allRooms = roomsSnapshot.docs.map(doc => { 
+						return { id: doc.id, ...doc.data() } 
+					})
 				
-				// now fetch area and rooms
-				const c = allClasses[0] 
-				c.id = 'lvzQqyZIV1wjwYnRV9hn' // override on purpose for testing
+					console.log('allRooms =', allRooms)
+				} catch (e) {
+					console.error("Error adding document: ", e);
+				}
 
-				// fetch areas
-				const areasQuery = query(collection(db, `classes/${c.id}/roomTypes`))
-				const areasSnapshot = await getDocs(areasQuery) 
-				const allAreas = areasSnapshot.docs.map(doc => {
-					return { id: doc.id, ...doc.data() }
-				})
-				console.log('allAreas =', allAreas)
-				areaDocs = allAreas
-
-				// fetch rooms 
-				const roomsQuery = query(collection(db, `classes/${c.id}/rooms`), where('roomTypeID', '==', c.id))
-				const roomsSnapshot = await getDocs(roomsQuery)
-				const allRooms = roomsSnapshot.docs.map(doc => { 
-					return { id: doc.id, ...doc.data() } 
-				})
-			
-				console.log('allRooms =', allRooms)
-			} catch (e) {
-				console.error("Error adding document: ", e);
+				// ...
+			} else {
+				console.log('not logged in')
+				// User is signed out
+				// ...
 			}
-
-			// ...
-		} else {
-			console.log('not logged in')
-			// User is signed out
-			// ...
-		}
-	});
+		});
 	})
 </script>

@@ -4,8 +4,17 @@
     <Content>
       <div class="card-container">
         <Card padded>
-          <img src="../static/logo.png" width="55" height="50">
-          <ClassDropdownMenu/>
+          <div style="display: flex; align-items: center">
+            <img src="../static/logo.png" width="55" height="50">
+            {#if !storeUser.uid}
+              <div id="sign-up-area">
+
+              </div>
+            {:else}
+              {storeUser}
+              <ClassDropdownMenu/>
+            {/if}
+          </div>
         </Card>
       </div>
       <List>
@@ -18,7 +27,7 @@
  
   <AppContent class="app-content">
     <main class="main-content">
-      <div id="main-content">
+      <div id="main-content" style="height: 100vh">
         
       </div>
     </main>
@@ -30,14 +39,14 @@
   import Drawer, { AppContent, Content } from '@smui/drawer';
   import Card from '@smui/card'
   import List, { Item, Text } from '@smui/list';
- 
-  let clicked = 'nothing yet';
+  import { storeUser } from './store.js'
 </script>
  
 <style>
   /* These classes are only needed because the
     drawer is in a container on the page. */
   .drawer-container {
+    height: 100vh;
     position: relative;
     display: flex;
     /* height: 350px;
