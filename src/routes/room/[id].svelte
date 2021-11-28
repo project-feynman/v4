@@ -31,19 +31,30 @@
 {#if roomDoc}
 	<div use:portal={'main-content'} style="height: 100vh">
 		{#each roomDoc.blackboards as boardID (boardID) }
-			<RenderlessFetchStrokes dbPath={boardsDbPath + boardID + '/strokes'} 
+			<FetchBlackboard dbPath={boardsDbPath + boardID} 
+				let:boardDoc={boardDoc}
 				let:fetchStrokes={fetchStrokes}
+				let:isFetchingStrokes={isFetchingStrokes}
 				let:strokesArray={strokesArray}
 			>
 				{#if !strokesArray}
-					<LinearProgress indeterminate />	
+					{#if isFetchingStrokes}
+						<LinearProgress {isFetchingStrokes} indeterminate />	
+					{/if}
 					<div use:lazyFetching={fetchStrokes} style="height: 500px">
+						<!-- the blackboard serves as a placeholder loader -->
 						<Blackboard strokesArray={[]}></Blackboard>
 					</div> 
-				{:else if strokesArray }
-					<Blackboard strokesArray={strokesArray}/>
+				{:else if boardDoc }
+					{#if boardDoc.audioDownloadURL }
+						<DoodleVideo {strokesArray} audioDownloadURL={boardDoc.audioDownloadURL}/>
+					{:else if boardDoc.creator }
+						<DoodleAnimation {strokesArray}/>
+					{:else}
+						<Blackboard {strokesArray}/>
+					{/if}
 				{/if}
-			</RenderlessFetchStrokes>
+				</FetchBlackboard>
 		{/each}
 	</div>
 {/if}
@@ -52,8 +63,10 @@
 
 <script>
 import LinearProgress from '@smui/linear-progress';
-import RenderlessFetchStrokes from '../../components/RenderlessFetchStrokes.svelte'
+import FetchBlackboard from '../../components/FetchBlackboard.svelte'
 import Blackboard from '../../components/Blackboard.svelte'
+import DoodleVideo from '../../components/DoodleVideo.svelte'
+import DoodleAnimation from '../../components/DoodleAnimation.svelte'
 import LeftDrawer from '../../LeftDrawer.svelte'
 import { portal } from "../../actions.js";
 import { onMount } from 'svelte'
@@ -89,7 +102,7 @@ function lazyFetching (node, fetchStrokes) {
 		}, 
 		{
 			root: null, // use viewport 
-			threshold: 0.5,
+			threshold: 0.1,
 			rootMargin: '0px' // shrink/expand the root element's area, not very useful
 		}
 	)

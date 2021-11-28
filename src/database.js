@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { collection, getDocs, getDoc, query, where  } from "firebase/firestore"; 
+import { doc, collection, getDocs, getDoc, query, where  } from "firebase/firestore"; 
 
 initializeApp({
   apiKey: "AIzaSyB7XsbhYEd_4DQigc_hfnmdpcwlvzugPOw",
@@ -23,6 +23,14 @@ export async function fetchDocs (dbPath) {
     const data = snapshot.docs.map(doc => {
       return { id: doc.id, ...doc.data() }
     })
+    resolve(data)
+  })
+}
+
+export async function fetchDoc (dbPath) {
+  return new Promise(async (resolve) => {
+    const snapshot = await getDoc(doc(db, dbPath))
+    const data = { id: snapshot.id, ...snapshot.data() }
     resolve(data)
   })
 }
