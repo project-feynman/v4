@@ -4,18 +4,16 @@
 >
 
 </canvas>
+
+<Button on:click={syncRecursively}>Play</Button>
 <Slider
-  bind:value={currentFrameIdx}
+  bind:value={nextFrameIdx}
   min={0}
   max={allFrames.length + 1}
   step={1}
   discrete
-  input$aria-label="Discrete slider"
 />
-<Button on:click={syncRecursively}>Play</Button>
- 
 
-<pre class="status">Value: {value}</pre>
  
 <script>
   import { resizable } from '../helpers/canvasHelpers.js'
@@ -30,10 +28,10 @@
   let ctx
   let allFrames = []
   let currentFrameIdx = 0
+  let nextFrameIdx = 0
+
   let playbackSpeed = 1
   let recursiveSyncer 
-
-  let value = 0;
 
   onDestroy(() => {
     if (recursiveSyncer) clearTimeout(recursiveSyncer)
@@ -51,23 +49,54 @@
     allFrames = allPoints
   })
 
+  // can potentially throttle
+  // I don't really understand what's going on here
+  $: {
+    if (!recursiveSyncer && ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < Math.min(nextFrameIdx, allFrames.length); i++) {
+        renderFrame(allFrames[i], true)
+      }
+    }
+    
+    if (currentFrameIdx < nextFrameIdx) {
+      for (let i = currentFrameIdx; i < Math.min(nextFrameIdx, allFrames.length); i++) {
+        renderFrame(allFrames[i], false) // `await` might be necessary
+      }
+    } 
+    else if (currentFrameIdx > nextFrameIdx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < Math.min(nextFrameIdx, allFrames.length); i++) {
+        renderFrame(allFrames[i], true)
+      }
+    }
+
+    currentFrameIdx = nextFrameIdx 
+  }
+
   async function syncRecursively () {
     console.log('sync recursively')
+    if (!recursiveSyncer) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      currentFrameIdx = 0
+      nextFrameIdx = 0
+    }
     console.log('nextFrameIdx =', currentFrameIdx)
-    console.log('allFrames =', allFrames)
     // syncAnimation()
-    if (currentFrameIdx < allFrames.length) {
-      for (let i = 0; i <= currentFrameIdx; i++) {
-        await renderFrame(allFrames[i], true)
-      }
-
+    if (currentFrameIdx < allFrames.length - 1) {
       // play around with sleep duration,
-      const timeTilNextStroke = 1000 
-      currentFrameIdx += 5
+      const timeTilNextStroke = 0
+      nextFrameIdx += 1
       recursiveSyncer = setTimeout(syncRecursively, timeTilNextStroke/playbackSpeed); // use recursion instead of `setInterval` to prevent overlapping calls
+    }
+    else {
+      clearTimeout(recursiveSyncer)
+      recursiveSyncer = null
+      console.log('I expect it to be null recursiveSyncer =', recursiveSyncer)
     }
   }
 
+  // Figure out why `resize` is not getting called
   async function onResize () {
     console.log('resized')
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -78,7 +107,7 @@
 
   async function renderFrame ({ strokeIndex, pointIndex }, instantly = false) {
     const stroke = strokesArray[strokeIndex];
-    const lineWidth = stroke.lineWidth; 
+    const lineWidth = stroke.lineWidth 
     const normalizedLineWidth = lineWidth * (canvas.scrollWidth / 1000);
     connectTwoPoints(
       stroke.points, 
