@@ -2,6 +2,7 @@
 <script context="module">
   import db from '../../database.js'
 
+	// what you destructure counts
 	export async function load({ page }) {
 		console.log('page =', page)
 		return {
@@ -39,7 +40,13 @@
 			>
 				{#if !strokesArray}
 					{#if isFetchingStrokes}
-						<LinearProgress {isFetchingStrokes} indeterminate />	
+						<!-- <CircularProgress
+							class="my-four-colors"
+							style="height: 50px; width: 50px;"
+							indeterminate
+							fourColor
+						/> -->
+						<!-- <LinearProgress indeterminate />	 -->
 					{/if}
 					<div use:lazyFetching={fetchStrokes} style="height: 500px">
 						<!-- the blackboard serves as a placeholder loader -->
@@ -76,6 +83,7 @@ import { collection, getDocs, getDoc, query, where, doc  } from 'firebase/firest
 import List, { Item, Text } from '@smui/list';
 import { goto } from '$app/navigation';
 // import { getStores, navigating, page, session } from '$app/stores';
+import CircularProgress from '@smui/circular-progress';
 
 export let roomID
 

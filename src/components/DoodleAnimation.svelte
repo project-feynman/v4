@@ -13,7 +13,6 @@
   step={1}
   discrete
 />
-
  
 <script>
   import { resizable } from '../helpers/canvasHelpers.js'
@@ -52,12 +51,12 @@
   // can potentially throttle
   // I don't really understand what's going on here
   $: {
-    if (!recursiveSyncer && ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < Math.min(nextFrameIdx, allFrames.length); i++) {
-        renderFrame(allFrames[i], true)
-      }
-    }
+    // if (!recursiveSyncer && ctx) {
+    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //   for (let i = 0; i < Math.min(nextFrameIdx, allFrames.length); i++) {
+    //     renderFrame(allFrames[i], true)
+    //   }
+    // }
     
     if (currentFrameIdx < nextFrameIdx) {
       for (let i = currentFrameIdx; i < Math.min(nextFrameIdx, allFrames.length); i++) {

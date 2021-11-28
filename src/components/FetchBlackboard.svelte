@@ -16,11 +16,9 @@
   }
   init()
 
-
-  // lazy-load for strokes
+  // for lazy-fetching
   async function fetchStrokes () {
     isFetchingStrokes = true
-    console.log('intersection triggered fetchStrokes()')
     strokesArray = await fetchDocs(dbPath + '/strokes')
   }
 </script>
